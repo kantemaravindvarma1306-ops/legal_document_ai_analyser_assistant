@@ -1,0 +1,95 @@
+# ==============================================================================
+# Recruitment Recommendation Engine - Central Configuration
+# ==============================================================================
+# You can modify API keys, models, fallback routing, scoring weights, and bias rules here.
+# Sensitive keys can also be set via environment variables (e.g., GEMINI_API_KEY).
+# Environment variables take precedence over values in this file.
+# ==============================================================================
+
+app:
+  name: "Recruitment Recommendation Engine"
+  version: "1.0.0"
+  environment: "development"
+  debug: true
+
+database:
+  provider: "sqlite"
+  db_path: "recruitment_engine.db"
+  enable_fts5: true
+
+# ==============================================================================
+# Multi-Provider LLM Configuration & Dynamic Routing
+# ==============================================================================
+# ROUTING LOGIC:
+# 1. If GEMINI_API_KEY is provided and active, the system routes queries to Gemini.
+# 2. If NO GEMINI_API_KEY is found (or quota exhausted), the system seamlessly
+#    falls back to NVIDIA NIM API (e.g. meta/llama-3.3-70b-instruct).
+# 3. If neither cloud API key is present, the system routes to Ollama Cloud API
+#    with high-performance open models like gpt-oss:20b.
+# ==============================================================================
+llm:
+  routing_strategy: "auto_fallback"
+  
+  priority_order:
+    - "gemini"
+    - "nvidia"
+    - "ollama"
+
+  providers:
+    # 1. Google Gemini API (Free Tier)
+    gemini:
+      enabled: true
+      api_key: ""
+      model: "gemini-2.0-flash"
+      base_url: "https://generativelanguage.googleapis.com/v1beta"
+      temperature: 0.1
+      max_output_tokens: 4096
+      timeout_seconds: 30
+
+    # 2. NVIDIA NIM API (Free Tier / Developer Account)
+    nvidia:
+      enabled: true
+      api_key: ""
+      model: "meta/llama-3.3-70b-instruct"
+      base_url: "https://integrate.api.nvidia.com/v1"
+      temperature: 0.1
+      max_tokens: 4096
+      timeout_seconds: 45
+
+    # 3. Ollama Cloud API (Cloud Hosted High-Capability Models)
+    ollama:
+      enabled: true
+      # Ollama Cloud API Key
+      api_key: "40c103b3107c45baa9dad2f172ad2d6e.hsiJCIJNyJn6SQrkGlWJlTq0"
+      # Base URL for Ollama Cloud API
+      base_url: "https://ollama.com/api"
+      # Recommended Ollama Cloud model:
+      # - gpt-oss:20b
+      model: "gpt-oss:20b"
+      temperature: 0.1
+      timeout_seconds: 60
+
+# ==============================================================================
+# Transparent Deterministic Scoring Weights (Recruiter Configurable)
+# Must sum to 1.0 (100%)
+# ==============================================================================
+scoring:
+  weights:
+    skills: 0.40           # Required and preferred skills
+    experience: 0.25       # Years of relevant experience & progression
+    qualifications: 0.15   # Education, degrees, certifications
+    projects: 0.15         # Real-world projects, repos, portfolio evidence
+    domain: 0.05           # Specific industry/sector background
+
+  mandatory_requirement_penalty: 0.30  # Score reduction if candidate lacks a mandatory qualification
+
+# ==============================================================================
+# Fairness, Privacy & Bias Blinding
+# ==============================================================================
+fairness:
+  blind_demographic_attributes: true
+  mask_names: true
+  mask_photos: true
+  mask_gender: true
+  mask_age: true
+  dpdp_compliance_retention_days: 90

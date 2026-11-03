@@ -1,0 +1,61 @@
+name: CJIT AI Suite Continuous Integration
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  backend-tests:
+    name: Backend Test Suites (FastAPI + Pytest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run Legal Backend Tests
+        run: |
+          cd legal_system/backend
+          python -m venv .venv
+          source .venv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pytest tests/ -v
+
+      - name: Run Recruitment Backend Tests
+        run: |
+          cd recruitment_system/backend
+          python -m venv .venv
+          source .venv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pytest tests/ -v
+
+  frontend-build:
+    name: Frontend Compilation (Next.js 14)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build Legal Frontend
+        run: |
+          cd legal_system/frontend
+          npm ci
+          npm run build
+
+      - name: Build Recruitment Frontend
+        run: |
+          cd recruitment_system/frontend
+          npm ci
+          npm run build
+

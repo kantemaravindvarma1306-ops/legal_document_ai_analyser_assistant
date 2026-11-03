@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  legal-backend:
+    build:
+      context: ./legal_system/backend
+      dockerfile: Dockerfile
+    container_name: legal-review-backend
+    ports:
+      - "8002:8002"
+    environment:
+      - PORT=8002
+      - DB_PATH=/app/legal_review.db
+      - LLM_PROVIDER=ollama
+      - OLLAMA_MODEL=gpt-oss:20b
+    volumes:
+      - ./legal_system/backend/legal_review.db:/app/legal_review.db
+    restart: unless-stopped
+
+  legal-frontend:
+    build:
+      context: ./legal_system/frontend
+      dockerfile: Dockerfile
+    container_name: legal-review-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8002/api/v1
+    depends_on:
+      - legal-backend
+    restart: unless-stopped
+
+  recruitment-backend:
+    build:
+      context: ./recruitment_system/backend
+      dockerfile: Dockerfile
+    container_name: recruitment-engine-backend
+    ports:
+      - "8003:8003"
+    environment:
+      - PORT=8003
+      - DB_PATH=/app/recruitment_engine.db
+      - LLM_PROVIDER=ollama
+      - OLLAMA_MODEL=gpt-oss:20b
+    volumes:
+      - ./recruitment_system/backend/recruitment_engine.db:/app/recruitment_engine.db
+    restart: unless-stopped
+
+  recruitment-frontend:
+    build:
+      context: ./recruitment_system/frontend
+      dockerfile: Dockerfile
+    container_name: recruitment-engine-frontend
+    ports:
+      - "3001:3001"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8003/api/v1
+    depends_on:
+      - recruitment-backend
+    restart: unless-stopped
+

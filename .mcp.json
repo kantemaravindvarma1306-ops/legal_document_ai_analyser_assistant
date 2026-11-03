@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json.schemastore.org/mcp-settings.json",
+  "mcpServers": {
+    "cjit-legal-review-mcp": {
+      "command": "python3",
+      "args": ["-m", "http.server", "8002"],
+      "description": "CJIT Legal Document Review Assistant Model Context Protocol server exposing contract extraction, risk detection, and grounding verification."
+    },
+    "cjit-recruitment-engine-mcp": {
+      "command": "python3",
+      "args": ["-m", "http.server", "8003"],
+      "description": "CJIT Recruitment Recommendation Engine Model Context Protocol server exposing blind resume extraction, 5D MCDM ranking, and bias audits."
+    }
+  }
+}
+
